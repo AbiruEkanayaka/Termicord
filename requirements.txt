@@ -1,2 +1,2 @@
 discord.py==2.3.2
-paramik==3.4.0
+paramiko==3.4.0
