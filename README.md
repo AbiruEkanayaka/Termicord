@@ -1,6 +1,9 @@
 # Termicord
 Termicord is A Open-Source Discord bot written in Python and discord.py to manage VPS servers and any other servers.
 
+## Note:
+* Termicord is still is in alpha phase development and may contain bugs.
+
 ## Getting Started
 
 1. Clone the repository
