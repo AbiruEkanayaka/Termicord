@@ -14,7 +14,7 @@ async def on_ready():
         await bot.load_extension("commands.addhost")
         await bot.load_extension("commands.execute")
         await tree.sync()  # Sync slash commands
-        print(f"synced") 
+        print(f"Loaded and Synced all commands!") 
     except Exception as e:
         print(f"Failed to sync slash commands: {e}")
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
