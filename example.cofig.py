@@ -1,1 +1,1 @@
-TOKEN = "Your Discord bot token here."
+TOKEN = "Your Discord bot token goes here."

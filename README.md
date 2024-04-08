@@ -20,5 +20,5 @@ python app.py
 
 ## Usage:
 
-`/add-host` use this command to add a host
-`/execute` executes a bash command based on your selected host
+1. `/add-host` use this command to add a host
+2. `/execute` executes a bash command based on your selected host
