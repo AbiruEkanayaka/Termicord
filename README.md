@@ -29,4 +29,5 @@ python app.py
 ## TODO:
 
 - use more secure database (PostgreSQL) - In process
-- Add more commands (/status, /reboot, /cluster)
+- fix `/execute` for outputs which take for than 15 minutes.
+- Add more commands (/status, /reboot, /cluster, /help)
