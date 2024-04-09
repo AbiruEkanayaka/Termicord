@@ -8,7 +8,7 @@ Termicord is A Open-Source Discord bot written in Python and discord.py to manag
 
 1. Clone the repository
 ```bash
-git clone https://github.com/AbiruEkanyakaka/Termicord.git
+git clone https://github.com/AbiruEkanayaka/Termicord.git
 ```
 2. Install requirements
 ```bash
