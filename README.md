@@ -15,8 +15,12 @@ git clone https://github.com/AbiruEkanyakaka/Termicord.git
 cd Termicord
 pip install -r requirements.txt
 ```
-3. Put the token to example.config.py and rename it to config.py
-4. Run the bot
+3. Put the token and db config to example.config.py and rename it to config.py
+4. Run db_setup.py for a single time
+```bash
+python db_setup.py
+```
+5. Run the bot
 ```bash
 python app.py
 ```
@@ -28,6 +32,5 @@ python app.py
 
 ## TODO:
 
-- use more secure database (PostgreSQL) - In process
 - fix `/execute` for outputs which takes more than 15 minutes.
 - Add more commands (/status, /reboot, /cluster, /help)

@@ -1,55 +1,54 @@
 import discord
 from discord.ext import commands
-import json
 from discord import app_commands
 from typing import Optional
-import os
-
-# Load existing data from JSON file
-with open("database.json", "r") as f:
-    database = json.load(f)
+from typing import List
 
 class AddHostCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @app_commands.command(name="add-host", description="Add a new host")
-    async def add_host(self, interaction: discord.Interaction, hostname: str, ip: str, username: str, password: Optional[str] = None, identification_file: Optional[discord.Attachment] = None, port: Optional[int] = None):
+    async def add_host(
+        self,
+        interaction: discord.Interaction,
+        hostname: str,
+        ip: str,
+        username: str,
+        password: Optional[str] = None,
+        identification_file: Optional[discord.Attachment] = None,
+        port: Optional[int] = None
+    ):
         await interaction.response.defer()
         user_id = str(interaction.user.id)
+        db = self.bot.db
 
-        # Check if user has provided either a password or a port
-        if password is None and identification_file is None:
-            await interaction.followup.send("Please provide either a password or an identification file.")
-            return
+        async with db.acquire() as conn:
+            if password is None and identification_file is None:
+                await interaction.followup.send("Please provide either a password or an identification file.")
+                return
 
-        # Check if the user already exists in the database
-        if user_id not in database:
-            database[user_id] = {}
+            if port is None:
+                port = 22  # Default port if not provided
 
-        # Add host details under the user's ID
-        database[user_id][hostname] = {
-            "ip": ip,
-            "username": username
-        }
+            identification_file_content = None
+            if identification_file:
+                # Read the file content
+                with open(identification_file.filename, "rb") as f:
+                    identification_file_content = f.read().decode('utf-8')
 
-        if password is not None:
-            database[user_id][hostname]["password"] = password
-
-        if identification_file is not None:
-            # Save the identification file to IF folder
-            if not os.path.exists("IF"):
-                os.mkdir("IF")
-            await identification_file.save(f"IF/{user_id}_{hostname}.pem")
-
-            database[user_id][hostname]["identification_file"] = f"IF/{user_id}_{hostname}.pem"
-
-        if port is not None:
-            database[user_id][hostname]["port"] = port
-
-        # Save updated database to JSON file
-        with open("database.json", "w") as f:
-            json.dump(database, f, indent=4)
+            try:
+                await conn.execute(
+                    """INSERT INTO hosts (user_id, hostname, ip, username, password, identification_file, port)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    ON CONFLICT (user_id, hostname) DO UPDATE
+                    SET ip = $3, username = $4, password = $5, identification_file = $6, port = $7""",
+                    user_id, hostname, ip, username, password, identification_file_content, port
+                )
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                await interaction.followup.send(f"An error occurred while adding host '{hostname}'. Please try again later.")
+                return
 
         await interaction.followup.send(f"Host '{hostname}' added successfully.")
 
