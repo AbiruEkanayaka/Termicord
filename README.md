@@ -28,7 +28,8 @@ python app.py
 ## Usage:
 
 1. `/add-host` use this command to add a host
-2. `/execute` executes a bash command based on your selected host
+2. `/remove-host` use this command to remove a host
+3. `/execute` executes a bash command based on your selected host
 
 ## TODO:
 

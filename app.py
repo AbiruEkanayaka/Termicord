@@ -18,6 +18,7 @@ async def on_ready():
     try:
         await bot.load_extension("commands.addhost")
         await bot.load_extension("commands.execute")
+        await bot.load_extension("commands.removehost")
         await tree.sync()  # Sync slash commands
         print(f"Loaded and Synced all commands!")
         bot.db = await create_db_pool()  # Create the database connection pool
