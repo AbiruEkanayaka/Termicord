@@ -30,6 +30,7 @@ python app.py
 1. `/add-host` use this command to add a host
 2. `/remove-host` use this command to remove a host
 3. `/execute` executes a bash command based on your selected host
+4. `kill` kills a running process by its PID
 
 ## TODO:
 
