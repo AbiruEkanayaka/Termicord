@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-import asyncpg
 import paramiko
 from discord import app_commands
 import os
@@ -10,12 +9,13 @@ class ExecuteCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.describe(command="The command to execute", hostname="The hostname of the host to execute the command on")
     @app_commands.command(name="execute", description="Execute a bash command on a selected host")
     async def execute(
         self,
         interaction: discord.Interaction,
         command: str,
-        host: str
+        hostname: str
     ):
         await interaction.response.defer()
         user_id = str(interaction.user.id)
@@ -25,11 +25,11 @@ class ExecuteCommand(commands.Cog):
             try:
                 host_data = await conn.fetchrow(
                     "SELECT ip, username, password, identification_file, port FROM hosts WHERE user_id = $1 AND hostname = $2",
-                    user_id, host
+                    user_id, hostname
                 )
             except Exception as e:
                 print(f"An error occurred: {e}")
-                await interaction.followup.send(f"An error occurred while executing command on host '{host}'. Please try again later.")
+                await interaction.followup.send(f"An error occurred while executing command on host '{hostname}'. Please try again later.")
                 return
 
             if not host_data:
@@ -71,7 +71,7 @@ class ExecuteCommand(commands.Cog):
 
                 # Embed creation
                 embed = discord.Embed(
-                    title=f"Output of command on host '{host}'",
+                    title=f"Output of command on host '{hostname}'",
                     color=discord.Color.green()
                 )
 
@@ -90,7 +90,7 @@ class ExecuteCommand(commands.Cog):
                 if os.path.exists(temp_file_path):
                     os.remove(temp_file_path)
 
-    @execute.autocomplete("host")
+    @execute.autocomplete("hostname")
     async def host_autocomplete(
         self,
         interaction: discord.Interaction,

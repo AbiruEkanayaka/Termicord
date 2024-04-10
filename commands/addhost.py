@@ -2,12 +2,19 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from typing import Optional
-from typing import List
 
 class AddHostCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.describe(
+        hostname="The hostname of the host",
+        ip="The IP address of the host",
+        username="The username to connect to the host",
+        password="The password to connect to the host",
+        identification_file="The identification file to connect to the host",
+        port="The port to connect to the host"
+    )
     @app_commands.command(name="add-host", description="Add a new host")
     async def add_host(
         self,

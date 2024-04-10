@@ -7,6 +7,7 @@ class RemoveHostCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @app_commands.describe(hostname="The hostname of the host to remove")
     @app_commands.command(name="remove-host", description="Remove an existing host")
     async def remove_host(
         self,
