@@ -70,11 +70,15 @@ class ExecuteCommand(commands.Cog):
                 error = stderr.read().decode()
 
                 # Embed creation
-                embed = discord.Embed(title=f"Command Execution on {host}")
-                if output:
-                    embed.add_field(name="Output", value=f"\n```{output}```\n", inline=False)
-                if error:
-                    embed.add_field(name="Error", value=f"\n```{error}```\n", inline=False)
+                embed = discord.Embed(
+                    title=f"Output of command on host '{host}'",
+                    color=discord.Color.green()
+                )
+
+                if error:  # Check if error is not None
+                    embed.description = f"**Output:**\n```{output}```\n**Error:**\n```{error}```"
+                else:
+                    embed.description = f"**Output:**\n```{output}```"
 
                 await interaction.followup.send(embed=embed)
 
