@@ -2,6 +2,11 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from typing import Optional
+import tempfile
+import os
+import paramiko
+import io
+from config import setup_commands
 
 class AddHostCommand(commands.Cog):
     def __init__(self, bot):
@@ -36,13 +41,17 @@ class AddHostCommand(commands.Cog):
                 return
 
             if port is None:
-                port = 22  # Default port if not provided
+                port = 22
 
             identification_file_content = None
             if identification_file:
-                # Read the file content
-                with open(identification_file.filename, "rb") as f:
+                temp_file_path = os.path.join(tempfile.gettempdir(), identification_file.filename)
+                await identification_file.save(temp_file_path)
+
+                with open(temp_file_path, "rb") as f:
                     identification_file_content = f.read().decode('utf-8')
+
+                os.remove(temp_file_path)
 
             try:
                 await conn.execute(
@@ -57,7 +66,32 @@ class AddHostCommand(commands.Cog):
                 await interaction.followup.send(f"An error occurred while adding host '{hostname}'. Please try again later.")
                 return
 
-        await interaction.followup.send(f"Host '{hostname}' added successfully.")
+        await self.run_commands_on_host(ip, username, password, identification_file_content, port, setup_commands)
+
+        await interaction.followup.send(f"Host '{hostname}' added successfully and setup commands executed.")
+
+    async def run_commands_on_host(self, ip, username, password, identification_file_content, port, commands):
+        """Run commands on the given host using SSH."""
+        try:
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            if identification_file_content:
+                key = paramiko.RSAKey(file_obj=io.StringIO(identification_file_content))
+                client.connect(hostname=ip, port=port, username=username, pkey=key)
+            else:
+                client.connect(hostname=ip, port=port, username=username, password=password)
+
+            for command in commands:
+                stdin, stdout, stderr = client.exec_command(command)
+                output = stdout.read().decode('utf-8')
+                error = stderr.read().decode('utf-8')
+                if error:
+                    pass # If warning this will get triggered so doing nothing for now :)
+
+            client.close()
+        except Exception as e:
+            print(f"An error occurred while executing commands on '{ip}': {e}")
 
 async def setup(bot):
     await bot.add_cog(AddHostCommand(bot))

@@ -16,8 +16,15 @@ async def create_hosts_table(pool):
                 identification_file VARCHAR(2500),
                 port INTEGER,
                 PRIMARY KEY (user_id, hostname)
-            )
-        ''')
+            );
+            CREATE TABLE IF NOT EXISTS live_terminals (
+                user_id TEXT NOT NULL,
+                hostname TEXT NOT NULL,
+                channel_id TEXT NOT NULL PRIMARY KEY,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            ALTER TABLE live_terminals ADD COLUMN is_active BOOLEAN DEFAULT false;            
+        ''') 
 
 async def main():
     pool = await create_db_pool()
