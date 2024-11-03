@@ -36,7 +36,6 @@ class KillCommand(commands.Cog):
                 await interaction.followup.send("Host not found. Check your configured hosts.")
                 return
 
-            # Destructure host_data tuple
             ip, username, password, identification_file, port = host_data
 
             # Temporary file creation
@@ -54,14 +53,16 @@ class KillCommand(commands.Cog):
                         hostname=ip,
                         username=username,
                         port=port or 22,
-                        key_filename=temp_file_path
+                        key_filename=temp_file_path,
+                        timeout=10
                     )
                 else:
                     client.connect(
                         hostname=ip,
                         username=username,
                         password=password,
-                        port=port or 22
+                        port=port or 22,
+                        timeout=10
                     )
 
                 # Execute command
@@ -78,7 +79,6 @@ class KillCommand(commands.Cog):
                 await interaction.followup.send(f"An error occurred while killing process on host '{hostname}'. Please try again later.")
             finally:
                 client.close()
-                # Remove temporary file
                 if os.path.exists(temp_file_path):
                     os.remove(temp_file_path)
 
