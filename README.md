@@ -21,6 +21,7 @@ Termicord is an open-source Discord bot that enables remote server management vi
 - pip package manager
 - Discord bot token
 - SSH access to target servers
+- PostgreSQL database
 
 ### Installation
 
@@ -41,7 +42,7 @@ cp example.config.py config.py
 # Edit config.py with your Discord token and database settings
 ```
 
-4. Initialize the database (Note: Only run this step once in a new database):
+4. Initialize the database (Note: Only run this step once in a new PostgreSQL database):
 ```bash
 python db_setup.py
 ```
