@@ -96,7 +96,7 @@ python app.py
 
 - [ ] Add network usage sorting to `/processes`
 - [ ] Add better SSH connection handling
-- [ ] Implement consistent terminal control using tmux/dtach
+- [ ] Implement consistent terminal control using dtach
 - [ ] Add support for more Linux distributions
 - [ ] Implement session logging
 - [ ] Add automated backup functionality
