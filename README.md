@@ -10,7 +10,7 @@ Termicord is an open-source Discord bot that enables remote server management vi
 
 - **Alpha Status**: This project is in active development and may contain bugs
 - **Compatibility**: Currently tested only on Debian and Ubuntu systems
-- **Security**: Use in production environments at your own risk
+- **Security**: Use in production environments at your own risk. As the time of stating, there have been no major security risks discovered.
 - **Contributions**: Testing on other Debian-based distributions is welcome
 
 ## 🚀 Quick Start
