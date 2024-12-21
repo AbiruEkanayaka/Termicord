@@ -73,13 +73,13 @@ Termicord is an open-source Discord bot that enables remote server management vi
 
 ### Interactive Terminal
 
-| Command                  | Description               |
-| -----------------------  | ------------------------- |
-| `/live-terminal start`   | Begin interactive session |
-| `/live-terminal stop`    | End interactive session   |
-| `/live-terminal restart` | Restart inactive session  |
-| `/live-terminal list`    | List active sessions      |
-| `^C`                     | Interrupt current process |
+| Command                         | Description               |
+| ------------------------------- | ------------------------- |
+| `/live-terminal start`          | Begin interactive session |
+| `/live-terminal stop`           | End interactive session   |
+| `/live-terminal restart`        | Restart inactive session  |
+| `/live-terminal list`           | List active sessions      |
+| `^C`(on a liveterminal session) | Interrupt current process |
 
 ### Monitoring Commands
 
