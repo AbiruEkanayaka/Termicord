@@ -94,6 +94,7 @@ Termicord is an open-source Discord bot that enables remote server management vi
 
 ## 🛠️ Roadmap
 
+- [ ] Add support for UI based applications. eg: nano, vim, tmux.
 - [ ] Add network usage sorting to `/processes`
 - [ ] Add better SSH connection handling
 - [ ] Implement consistent terminal control using dtach
