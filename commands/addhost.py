@@ -6,11 +6,13 @@ import tempfile
 import os
 import paramiko
 import io
+import asyncio
 from config import setup_commands
 
 class AddHostCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.timeout = 30  # Default timeout in seconds
 
     @app_commands.describe(
         hostname="The hostname of the host",
@@ -35,16 +37,16 @@ class AddHostCommand(commands.Cog):
         user_id = str(interaction.user.id)
         db = self.bot.db
 
-        async with db.acquire() as conn:
-            if password is None and identification_file is None:
-                await interaction.followup.send("Please provide either a password or an identification file.")
-                return
+        if password is None and identification_file is None:
+            await interaction.followup.send("Please provide either a password or an identification file.")
+            return
 
-            if port is None:
-                port = 22
+        if port is None:
+            port = 22
 
-            identification_file_content = None
-            if identification_file:
+        identification_file_content = None
+        if identification_file:
+            try:
                 temp_file_path = os.path.join(tempfile.gettempdir(), identification_file.filename)
                 await identification_file.save(temp_file_path)
 
@@ -52,7 +54,28 @@ class AddHostCommand(commands.Cog):
                     identification_file_content = f.read().decode('utf-8')
 
                 os.remove(temp_file_path)
+            except Exception as e:
+                await interaction.followup.send(f"Failed to process identification file: {str(e)}")
+                return
 
+        # Test connection before saving
+        try:
+            connection_test = await asyncio.wait_for(
+                self.test_connection(ip, username, password, identification_file_content, port),
+                timeout=self.timeout
+            )
+            if not connection_test[0]:
+                await interaction.followup.send(f"Connection test failed: {connection_test[1]}")
+                return
+        except asyncio.TimeoutError:
+            await interaction.followup.send(f"Connection test timed out after {self.timeout} seconds.")
+            return
+        except Exception as e:
+            await interaction.followup.send(f"Connection test failed with error: {str(e)}")
+            return
+
+        # Save host to database
+        async with db.acquire() as conn:
             try:
                 await conn.execute(
                     """INSERT INTO hosts (user_id, hostname, ip, username, password, identification_file, port)
@@ -62,13 +85,37 @@ class AddHostCommand(commands.Cog):
                     user_id, hostname, ip, username, password, identification_file_content, port
                 )
             except Exception as e:
-                print(f"An error occurred: {e}")
-                await interaction.followup.send(f"An error occurred while adding host '{hostname}'. Please try again later.")
+                await interaction.followup.send(f"Failed to save host configuration: {str(e)}")
                 return
 
-        await self.run_commands_on_host(ip, username, password, identification_file_content, port, setup_commands)
+        # Run setup commands
+        try:
+            await asyncio.wait_for(
+                self.run_commands_on_host(ip, username, password, identification_file_content, port, setup_commands),
+                timeout=self.timeout * 2
+            )
+            await interaction.followup.send(f"Host '{hostname}' added successfully and setup commands executed.")
+        except asyncio.TimeoutError:
+            await interaction.followup.send(f"Setup commands timed out after {self.timeout * 2} seconds. Host was added but might not be properly configured.")
+        except Exception as e:
+            await interaction.followup.send(f"Host added but setup commands failed: {str(e)}")
 
-        await interaction.followup.send(f"Host '{hostname}' added successfully and setup commands executed.")
+    async def test_connection(self, ip, username, password, identification_file_content, port):
+        """Test SSH connection to the host."""
+        try:
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            if identification_file_content:
+                key = paramiko.RSAKey(file_obj=io.StringIO(identification_file_content))
+                client.connect(hostname=ip, port=port, username=username, pkey=key, timeout=10)
+            else:
+                client.connect(hostname=ip, port=port, username=username, password=password, timeout=10)
+
+            client.close()
+            return True, "Connection successful"
+        except Exception as e:
+            return False, str(e)
 
     async def run_commands_on_host(self, ip, username, password, identification_file_content, port, commands):
         """Run commands on the given host using SSH."""
@@ -78,20 +125,20 @@ class AddHostCommand(commands.Cog):
 
             if identification_file_content:
                 key = paramiko.RSAKey(file_obj=io.StringIO(identification_file_content))
-                client.connect(hostname=ip, port=port, username=username, pkey=key)
+                client.connect(hostname=ip, port=port, username=username, pkey=key, timeout=10)
             else:
-                client.connect(hostname=ip, port=port, username=username, password=password)
+                client.connect(hostname=ip, port=port, username=username, password=password, timeout=10)
 
             for command in commands:
-                stdin, stdout, stderr = client.exec_command(command)
+                stdin, stdout, stderr = client.exec_command(command, timeout=30)
                 output = stdout.read().decode('utf-8')
                 error = stderr.read().decode('utf-8')
                 if error:
-                    pass # If warning this will get triggered so doing nothing for now :)
+                    print(f"Warning while executing {command}: {error}")
 
             client.close()
         except Exception as e:
-            print(f"An error occurred while executing commands on '{ip}': {e}")
+            raise Exception(f"Failed to execute commands: {str(e)}")
 
 async def setup(bot):
     await bot.add_cog(AddHostCommand(bot))
